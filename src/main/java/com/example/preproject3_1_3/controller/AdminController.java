@@ -8,7 +8,10 @@ import com.example.preproject3_1_3.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -20,49 +23,60 @@ public class AdminController {
 
     private final UserService userService;
     private final RoleService roleService;
-    private final UserRepository userRepository;
-
     @Autowired
-    public AdminController(UserService userService, RoleService roleService,
-                           UserRepository userRepository) {
+
+    public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
-        this.userRepository = userRepository;
     }
+
+
     @GetMapping("")
-    public String getAllUsers(ModelMap model, Principal principal) {
-        model.addAttribute("admin", userService.loadUserByUsername(principal.getName()));
-        model.addAttribute("people", userService.getAllUser());
-        model.addAttribute("person", new User());
-        model.addAttribute("roles", roleService.getAllRole());
+    public String showAllUser(ModelMap model) {
+        List<User> messages = userService.getAllUser();
+        model.addAttribute("messages", messages);
         return "admin";
     }
-    @GetMapping("/userInfo")
-    public String getUserInfo(ModelMap model) {
-        model.addAttribute("person", new User());
+
+    @GetMapping("/addNewUser")
+    public String addNewUser(ModelMap model) {
+
+        model.addAttribute("messages", new User());
+
         model.addAttribute("roles", roleService.getAllRole());
+
+
         return "userInfo";
     }
+
     @PostMapping()
-    public String addUser(@ModelAttribute("person") User user, Map<String, Object> model) {
-        User userFromDb = userRepository.findUserByName(user.getUsername());
-        if(userFromDb != null) {
-            model.put("message", "User exists!");
-            return "admin";
-        }
+    public String addUser(@ModelAttribute("messages") User user) {
+
         userService.addUser(user);
+
         return "redirect:/admin";
     }
+
     @DeleteMapping("user-delete/{id}")
     public String deleteUser(@PathVariable("id") Long id) {
         userService.deleteUserById(id);
         return "redirect:/admin";
+
     }
-    @PutMapping("/user-update/{id}")
+
+    @GetMapping("/user-update/{id}")
     public String updateUser(@PathVariable("id") Long id, ModelMap model) {
-        model.addAttribute("person", userService.findUserById(id));
+        User messages = userService.findUserById(id);
+        model.addAttribute("messages", messages);
         List<Role> roles = roleService.getAllRole();
         model.addAttribute("roles", roles);
         return "userInfo";
+    }
+    @PatchMapping("/{id}")
+    public String Update(@ModelAttribute("user") @Valid User updUser, BindingResult bindingResult, @PathVariable("id") int id) {
+        if (bindingResult.hasErrors())
+            return "redirect:/admin";
+        userService.update(id, updUser);
+        return "redirect:/admin";
     }
 }

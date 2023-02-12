@@ -58,10 +58,19 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
     }
+
+
     @Override
     @Transactional
     public void updateUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+    }
+    @Override
+    @Transactional
+    public void update(long id, User updatedUser) {
+        updatedUser.setId(id);
+        updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        userRepository.save(updatedUser);
     }
 }

@@ -2,6 +2,7 @@ package com.example.preproject3_1_3.service;
 
 import com.example.preproject3_1_3.model.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
@@ -14,4 +15,6 @@ public interface UserService {
     User findUserById(Long id);
     UserDetails loadUserByUsername(String username);
     void deleteUserById(Long id);
+    @Transactional
+    void update(long id, User updatedUser);
 }
